@@ -1,1 +1,3 @@
-change name to mandos?
+# Maglor
+
+fzf/dmenu integration for bw-cli
