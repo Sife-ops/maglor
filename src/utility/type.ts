@@ -1,23 +1,19 @@
 import * as t from 'io-ts';
 
-const responseFactory = (data: any) => {
-  return t.type({
-    success: t.boolean,
-    data: t.type({
-      object: t.string,
-      data,
-    }),
-  });
-};
+export const BwResponse = t.type({
+  success: t.boolean,
+  data: t.type({
+    object: t.string,
+    data: t.array(t.type({}))
+  }),
+});
 
-export const ItemsResponse = responseFactory(
-  t.array(
-    t.type({
-      id: t.string,
-      name: t.string,
-      type: t.number,
-    })
-  )
+export const ItemsResponse = t.array(
+  t.type({
+    id: t.string,
+    name: t.string,
+    type: t.number,
+  })
 );
 
 // const StatusResponse = t.type({
