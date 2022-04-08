@@ -1,3 +1,29 @@
 # Maglor
 
-fzf/dmenu integration for bw-cli
+dmenu integration for bw-cli
+
+# Requirements
+
+- node.js
+- npm
+- bitwarden cli
+- dmenu
+- xclip
+
+# Installation
+
+```Bash
+npm i
+```
+
+```Bash
+npm i -g @vercel/ncc
+```
+
+```Bash
+npm run build
+```
+
+```Bash
+sudo make install
+```
