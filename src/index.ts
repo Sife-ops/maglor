@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as err from './utility/error';
 import * as t from './utility/type';
 import child_process from 'child_process';
@@ -9,6 +11,8 @@ import util from 'util';
 // todo: fzf support
 // todo: check all passwords for quotation marks
 // todo: systemd service for bw serve command
+// todo: package for linux
+// todo: makefile???
 
 const exec = util.promisify(child_process.exec);
 
@@ -50,7 +54,7 @@ const main = async () => {
 
   const execDmenu = async () => {
     try {
-      const result = await exec(`echo '${itemsString}' | dmenu -l 20`);
+      const result = await exec(`echo '${itemsString}' | dmenu -i -l 20`);
       const itemIndex = parseInt(result.stdout.split(' ')[0]);
       return items[itemIndex];
     } catch {
