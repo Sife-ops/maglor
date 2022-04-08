@@ -1,17 +1,18 @@
+import * as err from './utility/error';
 import * as t from './utility/type';
 import child_process from 'child_process';
 import fetch from 'cross-fetch';
 import util from 'util';
 
 // todo: envars for server port
+// todo: dmenu settings
+// todo: fzf support
+// todo: check all passwords for quotation marks
+// todo: systemd service for bw serve command
 
 const exec = util.promisify(child_process.exec);
 
 const baseUrl = 'http://localhost:8080';
-
-const responseValidationError = new Error(
-  'Bitwarden API response validation error'
-);
 
 const main = async () => {
   let response: Response;
@@ -21,7 +22,7 @@ const main = async () => {
       method: 'GET',
     });
   } catch (e) {
-    throw new Error('connection refused');
+    throw err.connectionRefusedError;
   }
 
   if (!response.ok) {
@@ -30,34 +31,47 @@ const main = async () => {
 
   const json = await response.json();
 
-  const bwResponse = t.BwResponse.decode(json);
-  if (bwResponse._tag === 'Left') throw responseValidationError;
+  const apiResponse = t.ApiResponse.decode(json);
+  if (apiResponse._tag === 'Left') throw err.responseValidationError;
 
-  const itemsResponse = t.ItemsResponse.decode(bwResponse.right.data.data);
-  if (itemsResponse._tag === 'Left') throw responseValidationError;
+  const itemsResponse = t.ItemsResponse.decode(apiResponse.right.data.data);
+  if (itemsResponse._tag === 'Left') throw err.responseValidationError;
 
-  let items = '';
-  for (const item of itemsResponse.right) {
-    const { id, name } = item;
-    items = `${items}${name} | ${id} \n`;
+  const items = itemsResponse.right;
+
+  let itemsString = '';
+  for (let i = 0; i < items.length; i++) {
+    const { name, login } = items[i];
+    const username = login?.username ? login.username : null;
+    itemsString = `${itemsString}${i} | ${name} ${
+      username ? `| ${username} ` : ''
+    }\n`;
   }
 
-  let itemId = '';
-  try {
-    const result = await exec(`echo '${items}' | dmenu -l 20`);
-    const outputArray = result.stdout.split(' ');
-    itemId = outputArray[outputArray.length - 2];
-    // console.log(itemId);
-  } catch {
+  const execDmenu = async () => {
+    try {
+      const result = await exec(`echo '${itemsString}' | dmenu -l 20`);
+      const itemIndex = parseInt(result.stdout.split(' ')[0]);
+      return items[itemIndex];
+    } catch {
+      console.log('dmenu terminated by user.');
+      process.exit(0);
+    }
+  };
+
+  const item = await execDmenu();
+
+  if (item.login) {
+    const { username, password } = item.login;
+
+    console.log(username);
+    console.log(password);
+
+    exec(`echo '${username}' | xclip -i -selection primary`);
+    exec(`echo '${password}' | xclip -i -selection clipboard`);
+
     process.exit(0);
   }
-
-  // todo: dynamically change object type
-  response = await fetch(`${baseUrl}/object/item/${itemId}`, {
-    method: 'GET',
-  });
-
-  console.log(await response.json());
 };
 
 main();

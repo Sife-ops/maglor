@@ -1,10 +1,10 @@
 import * as t from 'io-ts';
 
-export const BwResponse = t.type({
+export const ApiResponse = t.type({
   success: t.boolean,
   data: t.type({
     object: t.string,
-    data: t.array(t.type({}))
+    data: t.array(t.type({})),
   }),
 });
 
@@ -13,6 +13,13 @@ export const ItemsResponse = t.array(
     id: t.string,
     name: t.string,
     type: t.number,
+    login: t.union([
+      t.type({
+        username: t.union([t.string, t.null]),
+        password: t.union([t.string, t.null]),
+      }),
+      t.undefined,
+    ]),
   })
 );
 
