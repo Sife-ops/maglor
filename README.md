@@ -13,19 +13,7 @@ dmenu integration for bw-cli
 # Installation
 
 ```Bash
-npm i
-```
-
-```Bash
-npm i -g @vercel/ncc
-```
-
-```Bash
-npm run build
-```
-
-```Bash
-npm run ncc
+make build
 ```
 
 ```Bash
