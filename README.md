@@ -25,5 +25,9 @@ npm run build
 ```
 
 ```Bash
+npm run ncc
+```
+
+```Bash
 sudo make install
 ```

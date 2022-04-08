@@ -1,3 +1,3 @@
 install:
-	chmod +x ./build/index.js
-	cp ./build/index.js /usr/local/bin/maglor
+	chmod +x ./ncc/index.js
+	cp ./ncc/index.js /usr/local/bin/maglor

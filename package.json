@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "ncc build ./dist/index.js -o ./build"
+    "build": "tsc",
+    "watch": "tsc -w",
+    "ncc": "ncc build ./dist/index.js -o ./ncc"
   },
   "keywords": [],
   "author": "",
