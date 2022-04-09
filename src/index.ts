@@ -2,6 +2,7 @@
 
 import * as f from './utility/function';
 import * as r from './utility/request';
+import fs from 'fs';
 
 // todo: envars for server port
 // todo: dmenu settings
@@ -29,7 +30,7 @@ const main = async () => {
     }\n`;
   }
 
-  // todo: not a function
+  // todo: not as function
   const dmenuMain = async () => {
     try {
       const result = await f.execAsync(
@@ -40,6 +41,12 @@ const main = async () => {
 
       if (first === 'A ') {
         console.log('add item');
+
+        const template = await f.getTemplateItemLogin();
+        const tempFile = await f.mktemp();
+
+        fs.writeFileSync(tempFile, JSON.stringify(template, null, 2));
+        console.log(tempFile);
       } else if (first === 'D ') {
         console.log('delete item');
       } else if (first === 'E ') {
