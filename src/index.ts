@@ -2,7 +2,7 @@
 
 import * as err from './utility/error';
 import * as t from './utility/type';
-import child_process from 'child_process';
+import { exec } from 'child_process';
 import fetch from 'cross-fetch';
 import util from 'util';
 
@@ -14,11 +14,16 @@ import util from 'util';
 // todo: package for linux
 // todo: makefile???
 
-const exec = util.promisify(child_process.exec);
+const execAsync = util.promisify(exec);
 
 const baseUrl = 'http://localhost:8080';
 
 const main = async () => {
+  execAsync('bw sync').then(({ stdout, stderr }) => {
+    if (stdout) console.log(stdout);
+    if (stderr) console.log(stderr);
+  });
+
   let response: Response;
 
   try {
@@ -54,7 +59,7 @@ const main = async () => {
 
   const execDmenu = async () => {
     try {
-      const result = await exec(`echo '${itemsString}' | dmenu -i -l 20`);
+      const result = await execAsync(`echo '${itemsString}' | dmenu -i -l 20`);
       const itemIndex = parseInt(result.stdout.split(' ')[0]);
       return items[itemIndex];
     } catch {
@@ -71,8 +76,8 @@ const main = async () => {
     console.log(username);
     console.log(password);
 
-    exec(`echo '${username}' | xclip -i -selection primary`);
-    exec(`echo '${password}' | xclip -i -selection clipboard`);
+    execAsync(`echo '${username}' | xclip -i -selection primary`);
+    execAsync(`echo '${password}' | xclip -i -selection clipboard`);
 
     process.exit(0);
   }
