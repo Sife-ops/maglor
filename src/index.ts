@@ -44,9 +44,12 @@ const main = async () => {
 
         const template = await f.getTemplateItemLogin();
         const tempFile = await f.mktemp();
-
         fs.writeFileSync(tempFile, JSON.stringify(template, null, 2));
-        console.log(tempFile);
+
+        // todo: use $TERMEXEC variable?
+        const res = await f.execAsync(`xterm -e $EDITOR ${tempFile}`);
+
+        console.log(res);
       } else if (first === 'D ') {
         console.log('delete item');
       } else if (first === 'E ') {
