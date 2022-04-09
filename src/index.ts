@@ -5,11 +5,8 @@ import * as r from './utility/request';
 
 // todo: envars for server port
 // todo: dmenu settings
-// todo: fzf support
 // todo: check all passwords for quotation marks
 // todo: systemd service for bw serve command
-// todo: package for linux
-// todo: makefile???
 
 const main = async () => {
   f.execAsync('bw sync').then(({ stdout, stderr }) => {
@@ -17,9 +14,13 @@ const main = async () => {
     if (stderr) console.log(stderr);
   });
 
-  const items = await r.listObjectItems();
+  let itemsString =
+    'A | add\n' +
+    'D | delete\n' +
+    'E | edit\n' +
+    '========================================================================================================================================================================================================\n';
 
-  let itemsString = '';
+  const items = await r.listObjectItems();
   for (let i = 0; i < items.length; i++) {
     const { name, login } = items[i];
     const username = login?.username ? login.username : null;
@@ -28,32 +29,45 @@ const main = async () => {
     }\n`;
   }
 
-  const dmenuItemsList = async () => {
+  // todo: not a function
+  const dmenuMain = async () => {
     try {
       const result = await f.execAsync(
         `echo '${itemsString}' | dmenu -i -l 20`
       );
-      const itemIndex = parseInt(result.stdout.split(' ')[0]);
-      return items[itemIndex];
+
+      const first = result.stdout.split('|')[0];
+
+      if (first === 'A ') {
+        console.log('add item');
+      } else if (first === 'D ') {
+        console.log('delete item');
+      } else if (first === 'E ') {
+        console.log('edit item');
+      } else {
+        const itemIndex = parseInt(result.stdout.split(' ')[0]);
+
+        const item = items[itemIndex];
+
+        if (item.login) {
+          const { username, password } = item.login;
+
+          console.log(username);
+          console.log(password);
+
+          f.execAsync(`echo '${username}' | xclip -i -selection primary`);
+          f.execAsync(`echo '${password}' | xclip -i -selection clipboard`);
+        }
+      }
     } catch {
       console.log('dmenu terminated by user');
       process.exit(0);
     }
   };
 
-  const item = await dmenuItemsList();
+  await dmenuMain();
 
-  if (item.login) {
-    const { username, password } = item.login;
-
-    console.log(username);
-    console.log(password);
-
-    f.execAsync(`echo '${username}' | xclip -i -selection primary`);
-    f.execAsync(`echo '${password}' | xclip -i -selection clipboard`);
-
-    process.exit(0);
-  }
+  process.exit(0);
 };
 
 main();
