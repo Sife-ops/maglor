@@ -37,9 +37,9 @@ const main = async () => {
         `echo '${itemsString}' | dmenu -i -l 20`
       );
 
-      const first = result.stdout.split('|')[0];
+      const action = result.stdout.split('|')[0];
 
-      if (first === 'A ') {
+      if (action === 'A ') {
         console.log('add item');
 
         const template = await f.getTemplateItemLogin();
@@ -47,12 +47,13 @@ const main = async () => {
         fs.writeFileSync(tempFile, JSON.stringify(template, null, 2));
 
         // todo: use $TERMEXEC variable?
-        const res = await f.execAsync(`xterm -e $EDITOR ${tempFile}`);
+        let res = await f.execAsync(`xterm -e $EDITOR ${tempFile}`);
+        res = await f.execAsync(`cat ${tempFile} | bw encode | bw create item`);
 
-        console.log(res);
-      } else if (first === 'D ') {
+        console.log(res.stdout);
+      } else if (action === 'D ') {
         console.log('delete item');
-      } else if (first === 'E ') {
+      } else if (action === 'E ') {
         console.log('edit item');
       } else {
         const itemIndex = parseInt(result.stdout.split(' ')[0]);
