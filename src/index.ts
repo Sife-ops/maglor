@@ -29,7 +29,7 @@ const main = async () => {
   if (argv.url) {
     process.env.BW_CLI_API_URL = argv.url;
   } else {
-    process.env.BW_CLI_API_URL = 'http://localhost:8080';
+    process.env.BW_CLI_API_URL = 'http://localhost:8087';
   }
 
   const items = await r.listObjectItems();
