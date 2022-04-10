@@ -36,6 +36,10 @@ To keep `bw serve` and `sxhkd` running in the background
 if [ $(netstat -ltnp 2>/dev/null | grep '8087.*LISTEN.*node' | wc -l) -lt 1 ]; then
     setsid bw serve &
 fi
+
+if ! pgrep -x sxhkd 1>/dev/null; then
+    setsid sxhkd 1>/tmp/sxhkd.log 2>&1
+fi
 ```
 
 run
