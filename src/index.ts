@@ -3,15 +3,25 @@
 import * as f from './utility/function';
 import * as r from './utility/request';
 import fs from 'fs';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
 // todo: envars for server port
 // todo: dmenu settings
 // todo: check all passwords for quotation marks
 // todo: systemd service for bw serve command
-// todo: yargs
-// todo: termexec
+
+const parser = yargs(hideBin(process.argv)).options({
+  termexec: { type: 'string' },
+});
 
 const main = async () => {
+  const argv = await parser.argv;
+
+  if (argv.termexec) {
+    process.env.TERMEXEC = argv.termexec;
+  }
+
   f.execAsync('bw sync').then(({ stdout, stderr }) => {
     if (stdout) console.log(stdout);
     if (stderr) console.log(stderr);
@@ -51,7 +61,9 @@ const main = async () => {
         fs.writeFileSync(tempFile, JSON.stringify(template, null, 2));
 
         // todo: use $TERMEXEC variable?
-        let res = await f.execAsync(`xterm -e $EDITOR ${tempFile}`);
+        let res = await f.execAsync(
+          `${process.env.TERMEXEC} -e $EDITOR ${tempFile}`
+        );
 
         // todo: use REST call instead?
         res = await f.execAsync(`cat ${tempFile} | bw encode | bw create item`);
