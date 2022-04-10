@@ -44,6 +44,13 @@ export const getTemplateItemLogin = async () => {
   };
 };
 
+export const editTempFile = async (a: any): Promise<any> => {
+  const tempFile = await mktemp();
+  fs.writeFileSync(tempFile, JSON.stringify(a, null, 2));
+  await execAsync(`${process.env.TERMEXEC} $EDITOR ${tempFile}`);
+  return JSON.parse(fs.readFileSync(tempFile, 'utf8'));
+};
+
 export const logger = (o: any) => {
   console.log(
     util.inspect(o, {

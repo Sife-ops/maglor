@@ -69,22 +69,32 @@ export const apiDeleteRequest = async (item: {
   });
 };
 
-const ListObjectItems = t.type({
-  data: t.array(
+export const apiPutRequest = async (item: { id: string; object: string }) => {
+  return await apiRequest(`/object/${item.object}/${item.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(item),
+  });
+};
+
+const Item = t.type({
+  id: t.string,
+  name: t.string,
+  object: t.string,
+  type: t.number,
+  login: t.union([
     t.type({
-      id: t.string,
-      name: t.string,
-      object: t.string,
-      type: t.number,
-      login: t.union([
-        t.type({
-          username: t.union([t.string, t.null]),
-          password: t.union([t.string, t.null]),
-        }),
-        t.undefined,
-      ]),
-    })
-  ),
+      username: t.union([t.string, t.null]),
+      password: t.union([t.string, t.null]),
+    }),
+    t.undefined,
+  ]),
+});
+
+const ListObjectItems = t.type({
+  data: t.array(Item),
 });
 
 export const listObjectItems = async () => {

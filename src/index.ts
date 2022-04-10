@@ -3,7 +3,7 @@
 import * as c from './utility/constant';
 import * as f from './utility/function';
 import * as r from './utility/request';
-import fs from 'fs';
+import * as t from './utility/type';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
@@ -48,28 +48,14 @@ const main = async () => {
     );
     const action = result.stdout.split('|')[0];
 
-    const fun1 = async (a: any) => {
-      const tempFile = await f.mktemp();
-      fs.writeFileSync(tempFile, JSON.stringify(a, null, 2));
-      await f.execAsync(`${process.env.TERMEXEC} $EDITOR ${tempFile}`);
-      const itemJson = fs.readFileSync(tempFile, 'utf8');
-      return JSON.parse(itemJson);
-    };
-
     if (action === 'C ') {
       /*
        * create
        */
       const template = await f.getTemplateItemLogin();
+      const item = await f.editTempFile(template);
 
-      //
-      const tempFile = await f.mktemp();
-      fs.writeFileSync(tempFile, JSON.stringify(template, null, 2));
-      await f.execAsync(`${process.env.TERMEXEC} $EDITOR ${tempFile}`);
-      const itemJson = fs.readFileSync(tempFile, 'utf8');
-      const item = JSON.parse(itemJson);
-      //
-
+      // todo: validate
       await r.apiPostRequest('/object/item', item);
     } else if (action === 'D ' || action === 'E ') {
       /*
@@ -84,15 +70,14 @@ const main = async () => {
       if (action === 'D ') {
         await r.apiDeleteRequest(item);
       } else if (action === 'E ') {
-        //
-        const tempFile = await f.mktemp();
-        fs.writeFileSync(tempFile, JSON.stringify(item, null, 2));
-        await f.execAsync(`${process.env.TERMEXEC} $EDITOR ${tempFile}`);
-        const itemJson = fs.readFileSync(tempFile, 'utf8');
-        const editedItem = JSON.parse(itemJson);
-        //
+        const json = await f.editTempFile(item);
 
-        await r.apiPostRequest('/object/item', editedItem);
+        const itemEditInput = t.ItemEditInput.decode(json);
+        if (itemEditInput._tag === 'Left') {
+          throw new Error('input validation error');
+        }
+
+        await r.apiPutRequest(itemEditInput.right);
       }
     } else {
       /*
@@ -100,7 +85,6 @@ const main = async () => {
        */
       const itemIndex = parseInt(result.stdout.split(' ')[0]);
       const item = items[itemIndex];
-      console.log(item);
 
       // todo: delegate to shellscript
       if (item.login) {
