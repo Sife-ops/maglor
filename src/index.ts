@@ -12,12 +12,19 @@ import { hideBin } from 'yargs/helpers';
 // todo: systemd service for bw serve command :(
 
 const parser = yargs(hideBin(process.argv)).options({
+  dmenuCommand: { type: 'string' },
   termexec: { type: 'string' },
   url: { type: 'string' },
 });
 
 const main = async () => {
   const argv = await parser.argv;
+
+  if (argv.dmenuCommand) {
+    process.env.DMENU_CMD = argv.dmenuCommand;
+  } else {
+    process.env.DMENU_CMD = 'dmenu -i -l 10';
+  }
 
   if (argv.termexec) {
     process.env.TERMEXEC = argv.termexec;
@@ -43,7 +50,7 @@ const main = async () => {
   }
 
   const selected = await f.execAsync(
-    `echo '${c.actionsString + itemsString}' | dmenu -i -l 20`
+    `echo '${c.actionsString + itemsString}' | ${process.env.DMENU_CMD}`
   );
   const action = selected.stdout[0];
 
@@ -62,13 +69,19 @@ const main = async () => {
      * delete/edit
      */
     const selected = await f.execAsync(
-      `echo '${itemsString}' | dmenu -i -l 20`
+      `echo '${itemsString}' | ${process.env.DMENU_CMD}`
     );
     const itemIndex = parseInt(selected.stdout.split(' ')[0]);
     const item = items[itemIndex];
 
     if (action === 'D') {
-      await r.apiDeleteRequest(item);
+      const selected = await f.execAsync(
+        `echo 'yes\nno' | ${process.env.DMENU_CMD}`
+      );
+
+      if (selected.stdout === 'yes\n') {
+        await r.apiDeleteRequest(item);
+      }
     } else if (action === 'E') {
       const json = await f.editTempFile(item);
 
