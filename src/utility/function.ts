@@ -10,7 +10,7 @@ export const mktemp = async (): Promise<string> => {
 };
 
 export const getTemplate = async (s: string) => {
-  // todo: use xdg bullcrap
+  // todo: use xdg spec
   const cacheDir = `${process.env.HOME}/.cache/maglor/template`;
   const cacheFile = `${cacheDir}/${s}`;
 

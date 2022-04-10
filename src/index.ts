@@ -43,15 +43,16 @@ const main = async () => {
   }
 
   try {
-    const result = await f.execAsync(
+    const selected = await f.execAsync(
       `echo '${c.actionsString + itemsString}' | dmenu -i -l 20`
     );
-    const action = result.stdout.split('|')[0];
+    const action = selected.stdout.split('|')[0];
 
     if (action === 'C ') {
       /*
        * create
        */
+      // todo: support all item types
       const template = await f.getTemplateItemLogin();
       const item = await f.editTempFile(template);
 
@@ -61,10 +62,10 @@ const main = async () => {
       /*
        * delete/edit
        */
-      const result = await f.execAsync(
+      const selected = await f.execAsync(
         `echo '${itemsString}' | dmenu -i -l 20`
       );
-      const itemIndex = parseInt(result.stdout.split(' ')[0]);
+      const itemIndex = parseInt(selected.stdout.split(' ')[0]);
       const item = items[itemIndex];
 
       if (action === 'D ') {
@@ -83,7 +84,7 @@ const main = async () => {
       /*
        * default
        */
-      const itemIndex = parseInt(result.stdout.split(' ')[0]);
+      const itemIndex = parseInt(selected.stdout.split(' ')[0]);
       const item = items[itemIndex];
 
       // todo: delegate to shellscript
