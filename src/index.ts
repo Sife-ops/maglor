@@ -8,12 +8,16 @@ import fs from 'fs';
 // todo: dmenu settings
 // todo: check all passwords for quotation marks
 // todo: systemd service for bw serve command
+// todo: yargs
+// todo: termexec
 
 const main = async () => {
   f.execAsync('bw sync').then(({ stdout, stderr }) => {
     if (stdout) console.log(stdout);
     if (stderr) console.log(stderr);
   });
+
+  // todo: start `bw serve` with maglor?
 
   let itemsString =
     'A | add\n' +
@@ -48,6 +52,8 @@ const main = async () => {
 
         // todo: use $TERMEXEC variable?
         let res = await f.execAsync(`xterm -e $EDITOR ${tempFile}`);
+
+        // todo: use REST call instead?
         res = await f.execAsync(`cat ${tempFile} | bw encode | bw create item`);
 
         console.log(res.stdout);
@@ -60,6 +66,7 @@ const main = async () => {
 
         const item = items[itemIndex];
 
+        // todo: delegate to shellscript
         if (item.login) {
           const { username, password } = item.login;
 
