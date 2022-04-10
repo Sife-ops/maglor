@@ -7,10 +7,9 @@ import fs from 'fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-// todo: envars for server port
 // todo: dmenu settings
 // todo: check all passwords for quotation marks
-// todo: systemd service for bw serve command
+// todo: systemd service for bw serve command :(
 
 const parser = yargs(hideBin(process.argv)).options({
   termexec: { type: 'string' },
@@ -31,6 +30,8 @@ const main = async () => {
   } else {
     process.env.BW_CLI_API_URL = 'http://localhost:8087';
   }
+
+  // todo: cache templates
 
   const items = await r.listObjectItems();
 
@@ -105,6 +106,8 @@ const main = async () => {
       console.log('dmenu terminated by user');
       process.exit(0);
     }
+
+    // todo: run `bw sync`?
   };
 
   await dmenuMain();

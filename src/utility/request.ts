@@ -1,12 +1,13 @@
 import * as t from 'io-ts';
 import fetch from 'cross-fetch';
 
-const responseValidationError = new Error(
+const apiResponseValidationError = new Error(
   'Bitwarden API response validation error.'
 );
 
 const ApiResponse = t.type({
   success: t.boolean,
+  // todo: just use `t.unknown`?
   data: t.union([t.unknown, t.undefined]),
 });
 
@@ -33,7 +34,7 @@ const apiRequest = async (endpoint: string, init: RequestInit) => {
   const apiResponse = ApiResponse.decode(json);
   if (apiResponse._tag === 'Left') {
     console.log(apiResponse.left);
-    throw responseValidationError;
+    throw apiResponseValidationError;
   }
 
   if (!apiResponse.right.success) {
@@ -92,12 +93,13 @@ export const listObjectItems = async () => {
   const listObjectItems = ListObjectItems.decode(apiResponse.data);
   if (listObjectItems._tag === 'Left') {
     console.log(listObjectItems.left);
-    throw responseValidationError;
+    throw apiResponseValidationError;
   }
 
   return listObjectItems.right.data;
 };
 
+// todo: status action
 // const StatusResponse = t.type({
 //   serverUrl: t.union([t.string, t.null]),
 //   lastSync: t.union([t.string, t.null]),
