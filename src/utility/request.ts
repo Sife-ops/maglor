@@ -16,19 +16,11 @@ const ApiResponse = t.type({
 });
 
 type Endpoint = '/generate' | '/list/object/items' | '/object/item';
-export const apiRequest = async (e: Endpoint, b?: any) => {
+const apiRequest = async (endpoint: Endpoint, init: RequestInit) => {
   let response: Response;
 
   try {
-    response = await fetch(`${env.api.url}${e}`, {
-      method: b ? 'POST' : 'GET',
-      headers: b
-        ? {
-            'Content-Type': 'application/json',
-          }
-        : undefined,
-      body: b ? JSON.stringify(b) : undefined,
-    });
+    response = await fetch(`${env.api.url}${endpoint}`, init);
   } catch (e) {
     throw new Error('connection to Bitwarden CLI RESI API was refused');
   }
@@ -57,6 +49,22 @@ export const apiRequest = async (e: Endpoint, b?: any) => {
   return apiResponse.right;
 };
 
+type Get = '/generate' | '/list/object/items';
+export const apiGetRequest = async (endpoint: Get) => {
+  return await apiRequest(endpoint, { method: 'GET' });
+};
+
+type Post = '/object/item';
+export const apiPostRequest = async (endpoint: Post, body: any) => {
+  return await apiRequest(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+};
+
 const ListObjectItems = t.array(
   t.type({
     id: t.string,
@@ -73,7 +81,7 @@ const ListObjectItems = t.array(
 );
 
 export const listObjectItems = async () => {
-  const apiResponse = await apiRequest('/list/object/items');
+  const apiResponse = await apiGetRequest('/list/object/items');
 
   const listObjectItems = ListObjectItems.decode(apiResponse.data.data);
   if (listObjectItems._tag === 'Left') {

@@ -22,6 +22,7 @@ const main = async () => {
     process.env.TERMEXEC = argv.termexec;
   }
 
+  // todo: run last?
   // f.execAsync('bw sync').then(({ stdout, stderr }) => {
   //   if (stdout) console.log(stdout);
   //   if (stderr) console.log(stderr);
@@ -67,12 +68,17 @@ const main = async () => {
         const itemJson = fs.readFileSync(tempFile, 'utf8');
         const item = JSON.parse(itemJson);
 
-        await r.apiRequest('/object/item', item);
+        await r.apiPostRequest('/object/item', item);
       } else if (action === 'D ') {
         /*
          * delete
          */
         console.log('delete item');
+        const result = await f.execAsync(
+          `echo '${itemsString}' | dmenu -i -l 20`
+        );
+        const itemIndex = parseInt(result.stdout.split(' ')[0]);
+        const item = items[itemIndex];
       } else if (action === 'E ') {
         /*
          * edit
@@ -80,7 +86,6 @@ const main = async () => {
         console.log('edit item');
       } else {
         const itemIndex = parseInt(result.stdout.split(' ')[0]);
-
         const item = items[itemIndex];
 
         // todo: delegate to shellscript
