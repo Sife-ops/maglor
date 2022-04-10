@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import * as c from './utility/constant';
 import * as f from './utility/function';
 import * as r from './utility/request';
 import fs from 'fs';
@@ -13,7 +14,7 @@ import { hideBin } from 'yargs/helpers';
 
 const parser = yargs(hideBin(process.argv)).options({
   termexec: { type: 'string' },
-  port: { type: 'number' },
+  url: { type: 'string' },
 });
 
 const main = async () => {
@@ -25,28 +26,13 @@ const main = async () => {
     process.env.TERMEXEC = 'xterm -e';
   }
 
-  if (argv.port) {
-    process.env.BW_CLI_API_PORT = argv.port.toString();
+  if (argv.url) {
+    process.env.BW_CLI_API_URL = argv.url;
   } else {
-    process.env.BW_CLI_API_PORT = '8080';
+    process.env.BW_CLI_API_URL = 'http://localhost:8080';
   }
 
-  // todo: run last?
-  // todo: needed?
-  // f.execAsync('bw sync').then(({ stdout, stderr }) => {
-  //   if (stdout) console.log(stdout);
-  //   if (stderr) console.log(stderr);
-  // });
-
-  // todo: start `bw serve` with maglor?
-
   const items = await r.listObjectItems();
-
-  let actionsString =
-    'C | create\n' +
-    'D | delete\n' +
-    'E | edit\n' +
-    '========================================================================================================================================================================================================\n';
 
   let itemsString = '';
   for (let i = 0; i < items.length; i++) {
@@ -61,7 +47,7 @@ const main = async () => {
   const dmenuMain = async () => {
     try {
       const result = await f.execAsync(
-        `echo '${actionsString + itemsString}' | dmenu -i -l 20`
+        `echo '${c.actionsString + itemsString}' | dmenu -i -l 20`
       );
 
       const action = result.stdout.split('|')[0];

@@ -1,6 +1,5 @@
 import * as t from 'io-ts';
 import fetch from 'cross-fetch';
-import { env } from './constant';
 
 const responseValidationError = new Error(
   'Bitwarden API response validation error.'
@@ -9,11 +8,6 @@ const responseValidationError = new Error(
 const ApiResponse = t.type({
   success: t.boolean,
   data: t.union([
-    // t.type({
-    //   object: t.string,
-    //   // todo: need unknown?
-    //   data: t.union([t.unknown, t.undefined]),
-    // }),
     t.unknown,
     t.undefined,
   ]),
@@ -23,7 +17,7 @@ const apiRequest = async (endpoint: string, init: RequestInit) => {
   let response: Response;
 
   try {
-    response = await fetch(`${env.api.url}${endpoint}`, init);
+    response = await fetch(`${process.env.BW_CLI_API_URL}${endpoint}`, init);
   } catch (e) {
     throw new Error('connection to Bitwarden CLI RESI API was refused');
   }
