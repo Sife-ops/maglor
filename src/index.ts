@@ -22,7 +22,7 @@ const main = async () => {
 
   if (argv.termexec) {
     process.env.TERMEXEC = argv.termexec;
-  } else {
+  } else if (!process.env.TERMEXEC) {
     process.env.TERMEXEC = 'xterm -e';
   }
 
