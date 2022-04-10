@@ -84,7 +84,7 @@ const main = async () => {
       /*
        * default
        */
-      const itemIndex = parseInt(selected.stdout[0]);
+      const itemIndex = parseInt(selected.stdout.split(' ')[0]);
       const item = items[itemIndex];
 
       // todo: delegate to shellscript
