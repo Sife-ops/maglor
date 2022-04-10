@@ -10,19 +10,27 @@ const ApiResponse = t.type({
   success: t.boolean,
   data: t.type({
     object: t.string,
-    data: t.array(t.type({})),
+    // todo: need unknown?
+    data: t.union([t.unknown, t.undefined]),
   }),
 });
 
-const apiRequest = async (s: string) => {
+type Endpoint = '/generate' | '/list/object/items' | '/object/item';
+export const apiRequest = async (e: Endpoint, b?: any) => {
   let response: Response;
 
   try {
-    response = await fetch(`${env.api.url}${s}`, {
-      method: 'GET',
+    response = await fetch(`${env.api.url}${e}`, {
+      method: b ? 'POST' : 'GET',
+      headers: b
+        ? {
+            'Content-Type': 'application/json',
+          }
+        : undefined,
+      body: b ? JSON.stringify(b) : undefined,
     });
   } catch (e) {
-    throw new Error('Connection to Bitwarden CLI RESI API was refused.');
+    throw new Error('connection to Bitwarden CLI RESI API was refused');
   }
 
   if (!response.ok) {
@@ -37,12 +45,19 @@ const apiRequest = async (s: string) => {
   }
 
   const apiResponse = ApiResponse.decode(json);
-  if (apiResponse._tag === 'Left') throw responseValidationError;
+  if (apiResponse._tag === 'Left') {
+    console.log(apiResponse.left);
+    throw responseValidationError;
+  }
+
+  if (!apiResponse.right.success) {
+    throw new Error('request unsuccessful');
+  }
 
   return apiResponse.right;
 };
 
-const ItemsResponse = t.array(
+const ListObjectItems = t.array(
   t.type({
     id: t.string,
     name: t.string,
@@ -60,10 +75,13 @@ const ItemsResponse = t.array(
 export const listObjectItems = async () => {
   const apiResponse = await apiRequest('/list/object/items');
 
-  const itemsResponse = ItemsResponse.decode(apiResponse.data.data);
-  if (itemsResponse._tag === 'Left') throw responseValidationError;
+  const listObjectItems = ListObjectItems.decode(apiResponse.data.data);
+  if (listObjectItems._tag === 'Left') {
+    console.log(listObjectItems.left);
+    throw responseValidationError;
+  }
 
-  return itemsResponse.right;
+  return listObjectItems.right;
 };
 
 // const StatusResponse = t.type({

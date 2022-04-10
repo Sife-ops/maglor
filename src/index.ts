@@ -22,18 +22,20 @@ const main = async () => {
     process.env.TERMEXEC = argv.termexec;
   }
 
-  f.execAsync('bw sync').then(({ stdout, stderr }) => {
-    if (stdout) console.log(stdout);
-    if (stderr) console.log(stderr);
-  });
+  // f.execAsync('bw sync').then(({ stdout, stderr }) => {
+  //   if (stdout) console.log(stdout);
+  //   if (stderr) console.log(stderr);
+  // });
 
   // todo: start `bw serve` with maglor?
 
-  let itemsString =
-    'A | add\n' +
+  let actionsString =
+    'C | create\n' +
     'D | delete\n' +
     'E | edit\n' +
     '========================================================================================================================================================================================================\n';
+
+  let itemsString = '';
 
   const items = await r.listObjectItems();
   for (let i = 0; i < items.length; i++) {
@@ -48,30 +50,33 @@ const main = async () => {
   const dmenuMain = async () => {
     try {
       const result = await f.execAsync(
-        `echo '${itemsString}' | dmenu -i -l 20`
+        `echo '${actionsString + itemsString}' | dmenu -i -l 20`
       );
 
       const action = result.stdout.split('|')[0];
 
-      if (action === 'A ') {
-        console.log('add item');
-
+      if (action === 'C ') {
+        /*
+         * create
+         */
         const template = await f.getTemplateItemLogin();
         const tempFile = await f.mktemp();
         fs.writeFileSync(tempFile, JSON.stringify(template, null, 2));
+        await f.execAsync(`${process.env.TERMEXEC} $EDITOR ${tempFile}`);
 
-        // todo: use $TERMEXEC variable?
-        let res = await f.execAsync(
-          `${process.env.TERMEXEC} -e $EDITOR ${tempFile}`
-        );
+        const itemJson = fs.readFileSync(tempFile, 'utf8');
+        const item = JSON.parse(itemJson);
 
-        // todo: use REST call instead?
-        res = await f.execAsync(`cat ${tempFile} | bw encode | bw create item`);
-
-        console.log(res.stdout);
+        await r.apiRequest('/object/item', item);
       } else if (action === 'D ') {
+        /*
+         * delete
+         */
         console.log('delete item');
       } else if (action === 'E ') {
+        /*
+         * edit
+         */
         console.log('edit item');
       } else {
         const itemIndex = parseInt(result.stdout.split(' ')[0]);
