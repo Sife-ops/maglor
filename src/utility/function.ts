@@ -16,10 +16,11 @@ export const getTemplate = async (s: string) => {
 
   if (fs.existsSync(cacheFile)) {
     const json = fs.readFileSync(cacheFile, 'utf8');
-    exec(`bw get template ${s}`, (error, stdout, stderr) => {
-      fs.writeFileSync(cacheFile, stdout);
-      console.log('updated cache');
-    });
+    // todo: move to main function?
+    // exec(`bw get template ${s}`, (error, stdout, stderr) => {
+    //   fs.writeFileSync(cacheFile, stdout);
+    //   console.log('updated cache');
+    // });
     return JSON.parse(json);
   } else {
     const result = await execAsync(`bw get template ${s}`);

@@ -42,74 +42,84 @@ const main = async () => {
     }\n`;
   }
 
-  // todo: not as function
-  const dmenuMain = async () => {
-    try {
+  try {
+    const result = await f.execAsync(
+      `echo '${c.actionsString + itemsString}' | dmenu -i -l 20`
+    );
+    const action = result.stdout.split('|')[0];
+
+    const fun1 = async (a: any) => {
+      const tempFile = await f.mktemp();
+      fs.writeFileSync(tempFile, JSON.stringify(a, null, 2));
+      await f.execAsync(`${process.env.TERMEXEC} $EDITOR ${tempFile}`);
+      const itemJson = fs.readFileSync(tempFile, 'utf8');
+      return JSON.parse(itemJson);
+    };
+
+    if (action === 'C ') {
+      /*
+       * create
+       */
+      const template = await f.getTemplateItemLogin();
+
+      //
+      const tempFile = await f.mktemp();
+      fs.writeFileSync(tempFile, JSON.stringify(template, null, 2));
+      await f.execAsync(`${process.env.TERMEXEC} $EDITOR ${tempFile}`);
+      const itemJson = fs.readFileSync(tempFile, 'utf8');
+      const item = JSON.parse(itemJson);
+      //
+
+      await r.apiPostRequest('/object/item', item);
+    } else if (action === 'D ' || action === 'E ') {
+      /*
+       * delete/edit
+       */
       const result = await f.execAsync(
-        `echo '${c.actionsString + itemsString}' | dmenu -i -l 20`
+        `echo '${itemsString}' | dmenu -i -l 20`
       );
+      const itemIndex = parseInt(result.stdout.split(' ')[0]);
+      const item = items[itemIndex];
 
-      const action = result.stdout.split('|')[0];
-
-      if (action === 'C ') {
-        /*
-         * create
-         */
-        const template = await f.getTemplateItemLogin();
-        const tempFile = await f.mktemp();
-        fs.writeFileSync(tempFile, JSON.stringify(template, null, 2));
-        await f.execAsync(`${process.env.TERMEXEC} $EDITOR ${tempFile}`);
-
-        const itemJson = fs.readFileSync(tempFile, 'utf8');
-        const item = JSON.parse(itemJson);
-
-        await r.apiPostRequest('/object/item', item);
-      } else if (action === 'D ') {
-        /*
-         * delete
-         */
-        const result = await f.execAsync(
-          `echo '${itemsString}' | dmenu -i -l 20`
-        );
-
-        const itemIndex = parseInt(result.stdout.split(' ')[0]);
-        const item = items[itemIndex];
-
+      if (action === 'D ') {
         await r.apiDeleteRequest(item);
       } else if (action === 'E ') {
-        /*
-         * edit
-         */
-        console.log('edit item');
-      } else {
-        /*
-         * default
-         */
-        const itemIndex = parseInt(result.stdout.split(' ')[0]);
-        const item = items[itemIndex];
-        console.log(item);
+        //
+        const tempFile = await f.mktemp();
+        fs.writeFileSync(tempFile, JSON.stringify(item, null, 2));
+        await f.execAsync(`${process.env.TERMEXEC} $EDITOR ${tempFile}`);
+        const itemJson = fs.readFileSync(tempFile, 'utf8');
+        const editedItem = JSON.parse(itemJson);
+        //
 
-        // todo: delegate to shellscript
-        if (item.login) {
-          const { username, password } = item.login;
-
-          console.log(username);
-          console.log(password);
-
-          f.execAsync(`echo '${username}' | xclip -i -selection primary`);
-          f.execAsync(`echo '${password}' | xclip -i -selection clipboard`);
-        }
+        await r.apiPostRequest('/object/item', editedItem);
       }
-    } catch (e) {
-      console.log('dmenu terminated by user');
-      console.log(e);
-      process.exit(0);
+    } else {
+      /*
+       * default
+       */
+      const itemIndex = parseInt(result.stdout.split(' ')[0]);
+      const item = items[itemIndex];
+      console.log(item);
+
+      // todo: delegate to shellscript
+      if (item.login) {
+        const { username, password } = item.login;
+
+        console.log(username);
+        console.log(password);
+
+        f.execAsync(`echo '${username}' | xclip -i -selection primary`);
+        f.execAsync(`echo '${password}' | xclip -i -selection clipboard`);
+      }
     }
+  } catch (e) {
+    // console.log('dmenu terminated by user');
+    console.log(e);
+    process.exit(1);
+  }
 
-    // todo: run `bw sync`?
-  };
-
-  await dmenuMain();
+  // todo: run `bw sync`?
 
   process.exit(0);
 };
