@@ -46,9 +46,9 @@ const main = async () => {
     const selected = await f.execAsync(
       `echo '${c.actionsString + itemsString}' | dmenu -i -l 20`
     );
-    const action = selected.stdout.split('|')[0];
+    const action = selected.stdout[0];
 
-    if (action === 'C ') {
+    if (action === 'C') {
       /*
        * create
        */
@@ -58,7 +58,7 @@ const main = async () => {
 
       // todo: validate
       await r.apiPostRequest('/object/item', item);
-    } else if (action === 'D ' || action === 'E ') {
+    } else if (action === 'D' || action === 'E') {
       /*
        * delete/edit
        */
@@ -68,9 +68,9 @@ const main = async () => {
       const itemIndex = parseInt(selected.stdout.split(' ')[0]);
       const item = items[itemIndex];
 
-      if (action === 'D ') {
+      if (action === 'D') {
         await r.apiDeleteRequest(item);
-      } else if (action === 'E ') {
+      } else if (action === 'E') {
         const json = await f.editTempFile(item);
 
         const itemEditInput = t.ItemEditInput.decode(json);
@@ -84,7 +84,7 @@ const main = async () => {
       /*
        * default
        */
-      const itemIndex = parseInt(selected.stdout.split(' ')[0]);
+      const itemIndex = parseInt(selected.stdout[0]);
       const item = items[itemIndex];
 
       // todo: delegate to shellscript
