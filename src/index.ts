@@ -42,66 +42,60 @@ const main = async () => {
     }\n`;
   }
 
-  try {
+  const selected = await f.execAsync(
+    `echo '${c.actionsString + itemsString}' | dmenu -i -l 20`
+  );
+  const action = selected.stdout[0];
+
+  if (action === 'C') {
+    /*
+     * create
+     */
+    // todo: support all item types
+    const template = await f.getTemplateItemLogin();
+    const item = await f.editTempFile(template);
+
+    // todo: validate
+    await r.apiPostRequest('/object/item', item);
+  } else if (action === 'D' || action === 'E') {
+    /*
+     * delete/edit
+     */
     const selected = await f.execAsync(
-      `echo '${c.actionsString + itemsString}' | dmenu -i -l 20`
+      `echo '${itemsString}' | dmenu -i -l 20`
     );
-    const action = selected.stdout[0];
+    const itemIndex = parseInt(selected.stdout.split(' ')[0]);
+    const item = items[itemIndex];
 
-    if (action === 'C') {
-      /*
-       * create
-       */
-      // todo: support all item types
-      const template = await f.getTemplateItemLogin();
-      const item = await f.editTempFile(template);
+    if (action === 'D') {
+      await r.apiDeleteRequest(item);
+    } else if (action === 'E') {
+      const json = await f.editTempFile(item);
 
-      // todo: validate
-      await r.apiPostRequest('/object/item', item);
-    } else if (action === 'D' || action === 'E') {
-      /*
-       * delete/edit
-       */
-      const selected = await f.execAsync(
-        `echo '${itemsString}' | dmenu -i -l 20`
-      );
-      const itemIndex = parseInt(selected.stdout.split(' ')[0]);
-      const item = items[itemIndex];
-
-      if (action === 'D') {
-        await r.apiDeleteRequest(item);
-      } else if (action === 'E') {
-        const json = await f.editTempFile(item);
-
-        const itemEditInput = t.ItemEditInput.decode(json);
-        if (itemEditInput._tag === 'Left') {
-          throw new Error('input validation error');
-        }
-
-        await r.apiPutRequest(itemEditInput.right);
+      const itemEditInput = t.ItemEditInput.decode(json);
+      if (itemEditInput._tag === 'Left') {
+        throw new Error('input validation error');
       }
-    } else {
-      /*
-       * default
-       */
-      const itemIndex = parseInt(selected.stdout.split(' ')[0]);
-      const item = items[itemIndex];
 
-      // todo: delegate to shellscript
-      if (item.login) {
-        const { username, password } = item.login;
-
-        console.log(username);
-        console.log(password);
-
-        f.execAsync(`echo '${username}' | xclip -i -selection primary`);
-        f.execAsync(`echo '${password}' | xclip -i -selection clipboard`);
-      }
+      await r.apiPutRequest(itemEditInput.right);
     }
-  } catch (e) {
-    // console.log('dmenu terminated by user');
-    console.log(e);
-    process.exit(1);
+  } else {
+    /*
+     * default
+     */
+    const itemIndex = parseInt(selected.stdout.split(' ')[0]);
+    const item = items[itemIndex];
+
+    // todo: delegate to shellscript
+    if (item.login) {
+      const { username, password } = item.login;
+
+      console.log(username);
+      console.log(password);
+
+      f.execAsync(`echo '${username}' | xclip -i -selection primary`);
+      f.execAsync(`echo '${password}' | xclip -i -selection clipboard`);
+    }
   }
 
   // todo: run `bw sync`?
@@ -109,4 +103,10 @@ const main = async () => {
   process.exit(0);
 };
 
-main();
+try {
+  main();
+} catch (e) {
+  // console.log('dmenu terminated by user');
+  console.log(e);
+  process.exit(1);
+}
