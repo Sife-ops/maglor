@@ -1,3 +1,4 @@
+import fs from 'fs';
 import util from 'util';
 import { exec } from 'child_process';
 
@@ -9,9 +10,24 @@ export const mktemp = async (): Promise<string> => {
 };
 
 export const getTemplate = async (s: string) => {
-  let result = await execAsync(`bw get template ${s}`);
-  let stdout = result.stdout;
-  return JSON.parse(stdout);
+  // todo: use xdg bullcrap
+  const cacheDir = `${process.env.HOME}/.cache/maglor/template`;
+  const cacheFile = `${cacheDir}/${s}`;
+
+  if (fs.existsSync(cacheFile)) {
+    const json = fs.readFileSync(cacheFile, 'utf8');
+    exec(`bw get template ${s}`, (error, stdout, stderr) => {
+      fs.writeFileSync(cacheFile, stdout);
+      console.log('updated cache');
+    });
+    return JSON.parse(json);
+  } else {
+    const result = await execAsync(`bw get template ${s}`);
+    fs.mkdirSync(cacheDir, { recursive: true });
+    fs.writeFileSync(cacheFile, result.stdout);
+    console.log('created cache');
+    return JSON.parse(result.stdout);
+  }
 };
 
 export const getTemplateItemLogin = async () => {

@@ -31,8 +31,6 @@ const main = async () => {
     process.env.BW_CLI_API_URL = 'http://localhost:8087';
   }
 
-  // todo: cache templates
-
   const items = await r.listObjectItems();
 
   let itemsString = '';
@@ -102,8 +100,9 @@ const main = async () => {
           f.execAsync(`echo '${password}' | xclip -i -selection clipboard`);
         }
       }
-    } catch {
+    } catch (e) {
       console.log('dmenu terminated by user');
+      console.log(e);
       process.exit(0);
     }
 
