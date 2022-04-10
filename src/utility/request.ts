@@ -8,15 +8,18 @@ const responseValidationError = new Error(
 
 const ApiResponse = t.type({
   success: t.boolean,
-  data: t.type({
-    object: t.string,
-    // todo: need unknown?
-    data: t.union([t.unknown, t.undefined]),
-  }),
+  data: t.union([
+    // t.type({
+    //   object: t.string,
+    //   // todo: need unknown?
+    //   data: t.union([t.unknown, t.undefined]),
+    // }),
+    t.unknown,
+    t.undefined,
+  ]),
 });
 
-type Endpoint = '/generate' | '/list/object/items' | '/object/item';
-const apiRequest = async (endpoint: Endpoint, init: RequestInit) => {
+const apiRequest = async (endpoint: string, init: RequestInit) => {
   let response: Response;
 
   try {
@@ -49,13 +52,13 @@ const apiRequest = async (endpoint: Endpoint, init: RequestInit) => {
   return apiResponse.right;
 };
 
-type Get = '/generate' | '/list/object/items';
-export const apiGetRequest = async (endpoint: Get) => {
+type GetEndpoint = '/generate' | '/list/object/items';
+export const apiGetRequest = async (endpoint: GetEndpoint) => {
   return await apiRequest(endpoint, { method: 'GET' });
 };
 
-type Post = '/object/item';
-export const apiPostRequest = async (endpoint: Post, body: any) => {
+type PostEndpoint = '/object/item';
+export const apiPostRequest = async (endpoint: PostEndpoint, body: any) => {
   return await apiRequest(endpoint, {
     method: 'POST',
     headers: {
@@ -65,31 +68,43 @@ export const apiPostRequest = async (endpoint: Post, body: any) => {
   });
 };
 
-const ListObjectItems = t.array(
-  t.type({
-    id: t.string,
-    name: t.string,
-    type: t.number,
-    login: t.union([
-      t.type({
-        username: t.union([t.string, t.null]),
-        password: t.union([t.string, t.null]),
-      }),
-      t.undefined,
-    ]),
-  })
-);
+export const apiDeleteRequest = async (item: {
+  id: string;
+  object: string;
+}) => {
+  return await apiRequest(`/object/${item.object}/${item.id}`, {
+    method: 'DELETE',
+  });
+};
+
+const ListObjectItems = t.type({
+  data: t.array(
+    t.type({
+      id: t.string,
+      name: t.string,
+      object: t.string,
+      type: t.number,
+      login: t.union([
+        t.type({
+          username: t.union([t.string, t.null]),
+          password: t.union([t.string, t.null]),
+        }),
+        t.undefined,
+      ]),
+    })
+  ),
+});
 
 export const listObjectItems = async () => {
   const apiResponse = await apiGetRequest('/list/object/items');
 
-  const listObjectItems = ListObjectItems.decode(apiResponse.data.data);
+  const listObjectItems = ListObjectItems.decode(apiResponse.data);
   if (listObjectItems._tag === 'Left') {
     console.log(listObjectItems.left);
     throw responseValidationError;
   }
 
-  return listObjectItems.right;
+  return listObjectItems.right.data;
 };
 
 // const StatusResponse = t.type({

@@ -13,6 +13,7 @@ import { hideBin } from 'yargs/helpers';
 
 const parser = yargs(hideBin(process.argv)).options({
   termexec: { type: 'string' },
+  port: { type: 'number' },
 });
 
 const main = async () => {
@@ -20,15 +21,26 @@ const main = async () => {
 
   if (argv.termexec) {
     process.env.TERMEXEC = argv.termexec;
+  } else {
+    process.env.TERMEXEC = 'xterm -e';
+  }
+
+  if (argv.port) {
+    process.env.BW_CLI_API_PORT = argv.port.toString();
+  } else {
+    process.env.BW_CLI_API_PORT = '8080';
   }
 
   // todo: run last?
+  // todo: needed?
   // f.execAsync('bw sync').then(({ stdout, stderr }) => {
   //   if (stdout) console.log(stdout);
   //   if (stderr) console.log(stderr);
   // });
 
   // todo: start `bw serve` with maglor?
+
+  const items = await r.listObjectItems();
 
   let actionsString =
     'C | create\n' +
@@ -37,8 +49,6 @@ const main = async () => {
     '========================================================================================================================================================================================================\n';
 
   let itemsString = '';
-
-  const items = await r.listObjectItems();
   for (let i = 0; i < items.length; i++) {
     const { name, login } = items[i];
     const username = login?.username ? login.username : null;
@@ -73,20 +83,26 @@ const main = async () => {
         /*
          * delete
          */
-        console.log('delete item');
         const result = await f.execAsync(
           `echo '${itemsString}' | dmenu -i -l 20`
         );
+
         const itemIndex = parseInt(result.stdout.split(' ')[0]);
         const item = items[itemIndex];
+
+        await r.apiDeleteRequest(item);
       } else if (action === 'E ') {
         /*
          * edit
          */
         console.log('edit item');
       } else {
+        /*
+         * default
+         */
         const itemIndex = parseInt(result.stdout.split(' ')[0]);
         const item = items[itemIndex];
+        console.log(item);
 
         // todo: delegate to shellscript
         if (item.login) {
