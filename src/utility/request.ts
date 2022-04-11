@@ -44,7 +44,7 @@ const apiRequest = async (endpoint: string, init: RequestInit) => {
   return apiResponse.right;
 };
 
-type GetEndpoint = '/generate' | '/list/object/items';
+type GetEndpoint = '/generate' | '/list/object/items' | '/status';
 export const apiGetRequest = async (endpoint: GetEndpoint) => {
   return await apiRequest(endpoint, { method: 'GET' });
 };
@@ -98,9 +98,9 @@ const ListObjectItems = t.type({
 });
 
 export const listObjectItems = async () => {
-  const apiResponse = await apiGetRequest('/list/object/items');
+  const apiGetResponse = await apiGetRequest('/list/object/items');
 
-  const listObjectItems = ListObjectItems.decode(apiResponse.data);
+  const listObjectItems = ListObjectItems.decode(apiGetResponse.data);
   if (listObjectItems._tag === 'Left') {
     console.log(listObjectItems.left);
     throw apiResponseValidationError;
@@ -109,11 +109,25 @@ export const listObjectItems = async () => {
   return listObjectItems.right.data;
 };
 
-// todo: status action
-// const StatusResponse = t.type({
-//   serverUrl: t.union([t.string, t.null]),
-//   lastSync: t.union([t.string, t.null]),
-//   userEmail: t.union([t.string, t.undefined]),
-//   userId: t.union([t.string, t.undefined]),
-//   status: t.string,
-// });
+const Status = t.type({
+  object: t.string,
+  template: t.type({
+    serverUrl: t.union([t.string, t.null]),
+    lastSync: t.union([t.string, t.null]),
+    userEmail: t.union([t.string, t.undefined]),
+    userId: t.union([t.string, t.undefined]),
+    status: t.string,
+  }),
+});
+
+export const status = async () => {
+  const apiGetResponse = await apiGetRequest('/status');
+
+  const status = Status.decode(apiGetResponse.data);
+  if (status._tag === 'Left') {
+    console.log(status.left);
+    throw apiResponseValidationError;
+  }
+
+  return status.right.template;
+};

@@ -112,6 +112,9 @@ const main = async () => {
 
       await r.apiPutRequest(itemEditInput.right);
     }
+  } else if (action === 'S') {
+    const status = await r.status();
+    await f.editTempFile(status);
   } else {
     /*
      * default
