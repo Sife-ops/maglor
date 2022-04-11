@@ -93,10 +93,10 @@ const main = async () => {
        * delete
        */
       const selected = await f.execAsync(
-        `echo 'yes\nno' | ${process.env.DMENU_CMD}`
+        `echo 'Are you sure?\nYes\nNo' | ${process.env.DMENU_CMD}`
       );
 
-      if (selected.stdout === 'yes\n') {
+      if (selected.stdout === 'Yes\n') {
         await r.apiDeleteRequest(item);
       }
     } else if (action === 'E') {

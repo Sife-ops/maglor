@@ -1,3 +1,5 @@
+// todo: itemTypeString
+
 export const actionsString =
   'C | create\n' +
   'D | delete\n' +
@@ -5,4 +7,6 @@ export const actionsString =
   'S | status\n' +
   '========================================================================================================================================================================================================\n';
 
-// todo: itemTypeString
+export const confirmDialog = 'Are you sure?\nyes\nno';
+// todo: why is DMENU_CMD undefined?
+export const confirmCmd = `echo '${confirmDialog}' | ${process.env.DMENU_CMD}`;
