@@ -33,14 +33,44 @@ export const getTemplate = async (s: string) => {
 
 export const getTemplateItemLogin = async () => {
   const item = await getTemplate('item');
-  const itemLogin = await getTemplate('item.login');
-  const itemLoginUri = await getTemplate('item.login.uri');
+  const login = await getTemplate('item.login');
+  const uri = await getTemplate('item.login.uri');
   return {
     ...item,
     login: {
-      ...itemLogin,
-      uris: [itemLoginUri],
+      ...login,
+      uris: [uri],
     },
+  };
+};
+
+export const getTemplateItemSecureNote = async () => {
+  const item = await getTemplate('item');
+  const secureNote = await getTemplate('item.secureNote');
+  return {
+    ...item,
+    type: 2,
+    secureNote,
+  };
+};
+
+export const getTemplateItemCard = async () => {
+  const item = await getTemplate('item');
+  const card = await getTemplate('item.card');
+  return {
+    ...item,
+    type: 3,
+    card,
+  };
+};
+
+export const getTemplateItemIdentity = async () => {
+  const item = await getTemplate('item');
+  const identity = await getTemplate('item.identity');
+  return {
+    ...item,
+    type: 4,
+    identity,
   };
 };
 

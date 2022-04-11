@@ -58,11 +58,25 @@ const main = async () => {
     /*
      * create
      */
-    // todo: support all item types
-    const template = await f.getTemplateItemLogin();
-    const item = await f.editTempFile(template);
+    const selected = await f.execAsync(
+      `echo 'login\nsecure note\ncard\nidentity' | ${process.env.DMENU_CMD}`
+    );
+
+    let template: any = undefined;
+    if (selected.stdout === 'login\n') {
+      template = await f.getTemplateItemLogin();
+    } else if (selected.stdout === 'secure note\n') {
+      template = await f.getTemplateItemSecureNote();
+    } else if (selected.stdout === 'card\n') {
+      template = await f.getTemplateItemCard();
+    } else if (selected.stdout === 'identity\n') {
+      template = await f.getTemplateItemIdentity();
+    } else {
+      throw new Error('invalid input');
+    }
 
     // todo: validate
+    const item = await f.editTempFile(template);
     await r.apiPostRequest('/object/item', item);
   } else if (action === 'D' || action === 'E') {
     /*
@@ -75,6 +89,9 @@ const main = async () => {
     const item = items[itemIndex];
 
     if (action === 'D') {
+      /*
+       * delete
+       */
       const selected = await f.execAsync(
         `echo 'yes\nno' | ${process.env.DMENU_CMD}`
       );
@@ -83,6 +100,9 @@ const main = async () => {
         await r.apiDeleteRequest(item);
       }
     } else if (action === 'E') {
+      /*
+       * edit
+       */
       const json = await f.editTempFile(item);
 
       const itemEditInput = t.ItemEditInput.decode(json);
